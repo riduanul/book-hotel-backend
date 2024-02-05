@@ -33,19 +33,27 @@ class UserLoginView(APIView):
         user = authenticate(request, username= username, password= password)
 
         if user:
-            token, _ = Token.objects.get_or_create(user=user) 
-            return Response({'token': token.key, 'user_id':user.id})
+            token, _ = Token.objects.get_or_create(user=user)
+            print(token) 
+            userInfo = {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'password':user.password
+            }
+            return Response({'token':token.key, 'user':userInfo})
         else:
             return Response({'error': 'Invalid Credential'})
 
 class UserLogoutView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         print("Reached the UserLogoutView")
         print(request.headers)
         print(request.auth)
-        Token.objects.filter(user=request.user).delete()
+        Token.objects.filter(user=request.user.user).delete()
         logout(request)
         return Response({'detail': 'Logout successful.'}, status=status.HTTP_200_OK)
 
